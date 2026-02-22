@@ -1,0 +1,18 @@
+services:
+  ventagoapp:
+    image: ai-tools-front
+    container_name: aitools
+    build: ./
+    restart: always
+    env_file: ./.env
+    ports:
+      - 5001:3000
+    stdin_open: true
+    tty: true
+    networks:
+      - aitools_network
+
+#Docker Networks
+networks:
+  aitools_network:
+    external: true
