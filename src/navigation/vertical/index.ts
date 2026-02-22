@@ -14,11 +14,17 @@ const navigation = (): VerticalNavItemsType => {
       path: '/post-generator'
     },
 
-    // {
-    //   title: 'CV Analyzer',
-    //   icon: 'streamline:business-user-curriculum',
-    //   path: '/cv-analyzer'
-    // },
+    {
+      title: 'CV Analyzer',
+      icon: 'streamline:business-user-curriculum',
+      path: '/cv-analyzer'
+    },
+    {
+      title: 'PDF Summarizer',
+      icon: 'mdi:file-document-edit-outline',
+      path: '/pdf-summarizer'
+    },
+    
     // {
     //   title: 'Chat con PDFs',
     //   icon: 'dashicons:pdf',
