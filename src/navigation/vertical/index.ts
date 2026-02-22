@@ -13,6 +13,7 @@ const navigation = (): VerticalNavItemsType => {
       icon: 'iconoir:post',
       path: '/post-generator'
     }
+    
     // {
     //   title: 'CV Analyzer',
     //   icon: 'streamline:business-user-curriculum',
