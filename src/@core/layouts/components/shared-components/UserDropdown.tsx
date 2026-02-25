@@ -1,10 +1,5 @@
-// ** React Imports
 import { useState, SyntheticEvent, Fragment } from 'react'
-
-// ** Next Import
 import { useRouter } from 'next/router'
-
-// ** MUI Imports
 import Box from '@mui/material/Box'
 import Menu from '@mui/material/Menu'
 import Badge from '@mui/material/Badge'
@@ -13,21 +8,14 @@ import Divider from '@mui/material/Divider'
 import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
 import MenuItem, { MenuItemProps } from '@mui/material/MenuItem'
-
-// ** Icon Imports
 import Icon from 'src/@core/components/icon'
-
-// ** Context
 import { useAuth } from 'src/hooks/useAuth'
-
-// ** Type Imports
 import { Settings } from 'src/@core/context/settingsContext'
 
 interface Props {
   settings: Settings
 }
 
-// ** Styled Components
 const BadgeContentSpan = styled('span')(({ theme }) => ({
   width: 8,
   height: 8,
@@ -43,17 +31,10 @@ const MenuItemStyled = styled(MenuItem)<MenuItemProps>(({ theme }) => ({
 }))
 
 const UserDropdown = (props: Props) => {
-  // ** Props
   const { settings } = props
-
-  // ** States
   const [anchorEl, setAnchorEl] = useState<Element | null>(null)
-
-  // ** Hooks
   const router = useRouter()
   const { logout, user } = useAuth()
-
-  // ** Vars
   const { direction } = settings
 
   const handleDropdownOpen = (event: SyntheticEvent) => {
@@ -127,7 +108,7 @@ const UserDropdown = (props: Props) => {
               <Avatar alt={user ? `${user.name} ${user.lastName}` : 'User'} src='/images/avatars/1.png' sx={{ width: '2.5rem', height: '2.5rem' }} />
             </Badge>
             <Box sx={{ display: 'flex', ml: 2.5, alignItems: 'flex-start', flexDirection: 'column' }}>
-              <Typography sx={{ fontWeight: 500 }}>{user ? `${user.name} ${user.lastName}` : 'Usuario'}</Typography>
+              <Typography sx={{ fontWeight: 500 }}>{user ? `${user.name} ${user.lastName}` : 'admin'}</Typography>
               <Typography variant='body2' sx={{ textTransform: 'capitalize' }}>{user?.role || 'User'}</Typography>
             </Box>
           </Box>

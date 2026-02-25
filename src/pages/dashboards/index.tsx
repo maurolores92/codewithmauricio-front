@@ -1,6 +1,7 @@
 import { Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography } from '@mui/material'
 import ApexChartWrapper from 'src/@core/styles/libs/react-apexcharts'
 import Icon from 'src/@core/components/icon'
+import PermissionGuard from 'src/components/PermissionGuard'
 
 const projects = [
   {
@@ -120,13 +121,14 @@ const getStatusColor = (status: string) => {
 
 const AnalyticsDashboard = () => {
   return (
-    <ApexChartWrapper>
-      <Box
-        sx={{
-          minHeight: '100vh',
-          py: { xs: 6, md: 10 }
-        }}
-      >
+    <PermissionGuard permission="view-dashboard">
+      <ApexChartWrapper>
+        <Box
+          sx={{
+            minHeight: '100vh',
+            py: { xs: 6, md: 10 }
+          }}
+        >
         <Container maxWidth='lg'>
           {/* HERO */}
           <Box
@@ -357,6 +359,7 @@ const AnalyticsDashboard = () => {
         </Container>
       </Box>
     </ApexChartWrapper>
+    </PermissionGuard>
   )
 }
 

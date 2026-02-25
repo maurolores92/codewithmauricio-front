@@ -98,7 +98,7 @@ const AuthProvider = ({ children }: Props) => {
           
           setUser(userDetailResponse)
           window.localStorage.setItem('userData', JSON.stringify(userDetailResponse))
-          window.localStorage.setItem('role', userDetailResponse.role || 'usuario')
+          window.localStorage.setItem('role', userDetailResponse.role || 'admin')
           
           // Redirigir según el returnUrl o a dashboards
           const returnUrl = router.query.returnUrl
@@ -109,7 +109,7 @@ const AuthProvider = ({ children }: Props) => {
           const userData = response.user || response
           setUser(userData)
           window.localStorage.setItem('userData', JSON.stringify(userData))
-          window.localStorage.setItem('role', userData.role || 'usuario')
+          window.localStorage.setItem('role', userData.role || 'admin')
           router.replace('/dashboards')
         }
       })
@@ -138,16 +138,16 @@ const AuthProvider = ({ children }: Props) => {
           const userDetailResponse: any = await apiConnector.get('/auth/me');
           setUser(userDetailResponse)
           window.localStorage.setItem('userData', JSON.stringify(userDetailResponse))
-          window.localStorage.setItem('role', userDetailResponse.role || 'usuario')
+          window.localStorage.setItem('role', userDetailResponse.role || 'admin')
           
           // Redirigir al dashboard
           router.replace('/dashboards')
         } catch (error) {
-          console.error('Error al obtener detalles del usuario:', error)
+          console.error('Error al obtener detalles del admin:', error)
           const userData = response.user || response
           setUser(userData)
           window.localStorage.setItem('userData', JSON.stringify(userData))
-          window.localStorage.setItem('role', userData.role || 'usuario')
+          window.localStorage.setItem('role', userData.role || 'admin')
           router.replace('/dashboards')
         }
       })
