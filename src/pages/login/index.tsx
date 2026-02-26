@@ -86,8 +86,8 @@ const schema = yup.object().shape({
 })
 
 const defaultValues = {
-  password: 'usuario123',
-  email: 'usuario@codewithmauricio.tech'
+  password: '',
+  email: ''
 }
 
 interface FormData {
@@ -170,11 +170,6 @@ const LoginPage = () => {
                 Porfavor inicia sesión en tu cuenta y comienza la aventura
               </Typography>
             </Box>
-            <Alert icon={false} sx={{ py: 3, mb: 6, ...bgColors.primaryLight, '& .MuiAlert-message': { p: 0 } }}>
-              <Typography variant='body2' sx={{ mb: 2, color: 'primary.main' }}>
-                Usuario de prueba: <strong>usuario@maurodev.online</strong> / Pass: <strong>usuario123</strong>
-              </Typography>
-            </Alert>
             <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
               <Box sx={{ mb: 4 }}>
                 <Controller
@@ -189,7 +184,6 @@ const LoginPage = () => {
                       value={value}
                       onBlur={onBlur}
                       onChange={onChange}
-                      placeholder='usuario@maurodev.online'
                       error={Boolean(errors.email)}
                       {...(errors.email && { helperText: errors.email.message })}
                     />
