@@ -53,10 +53,10 @@ const SortableColumn = ({
     <Card
       ref={setNodeRef}
       sx={{
-        flex: numberOfColumns <= 4 ? 1 : '0 0 25%',
+        flex: { xs: '0 0 100%', sm: numberOfColumns <= 4 ? 1 : '0 0 25%' },
         display: 'flex',
         flexDirection: 'column',
-        minWidth: numberOfColumns <= 4 ? 0 : '320px',
+        minWidth: { xs: 0, sm: numberOfColumns <= 4 ? 0 : '320px' },
         ...style
       }}
     >

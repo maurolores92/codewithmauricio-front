@@ -53,7 +53,7 @@ const KanbanBoardDnd = ({
       onDragEnd={onDragEnd}
     >
       <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
-        <Box sx={{ display: 'flex', gap: 3, overflowX: columns.length > 4 ? 'auto' : 'visible', pb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 3, overflowX: 'auto', pb: 2, width: '100%' }}>
           {columns.map(column => (
             <SortableColumn
               key={column.id}
