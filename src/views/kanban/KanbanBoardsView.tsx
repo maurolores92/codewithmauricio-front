@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Box, Button, Card, CardContent, Paper, Stack, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material'
+import { Box, Button, Card, CardContent, Paper, Stack, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Tooltip, CircularProgress } from '@mui/material'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import ConditionalRender from 'src/components/ConditionalRender'
@@ -87,9 +87,12 @@ const KanbanBoardsView = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [aiDialogOpen, setAiDialogOpen] = useState(false)
   const [selectedBoard, setSelectedBoard] = useState<Board | null>(null)
   const [newBoardName, setNewBoardName] = useState('')
   const [editName, setEditName] = useState('')
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [aiLoading, setAiLoading] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -225,6 +228,50 @@ const KanbanBoardsView = () => {
     }
   }
 
+  const handleAiGenerate = async () => {
+    if (!aiPrompt.trim()) {
+      toast.error('Por favor describe los tableros que necesitas')
+      
+      return
+    }
+
+    setAiLoading(true)
+    try {
+      // Llamada al endpoint de IA
+      const generatedBoards = await apiConnector.post('/boards/generate-with-ai', {
+        prompt: aiPrompt
+      }) as { boards: string[] }
+
+      if (!generatedBoards?.boards || generatedBoards.boards.length === 0) {
+        toast.error('La IA no pudo generar tableros. Intenta reformular tu solicitud.')
+
+        return
+      }
+
+      // Crear los tableros en batch
+      const startPosition = boards.length
+      const newBoards: Board[] = []
+
+      for (let i = 0; i < generatedBoards.boards.length; i++) {
+        const board = await apiConnector.post('/boards', {
+          name: generatedBoards.boards[i],
+          position: startPosition + i
+        }) as Board
+        newBoards.push(board)
+      }
+
+      setBoards(prev => [...prev, ...newBoards])
+      setAiDialogOpen(false)
+      setAiPrompt('')
+      toast.success(`${newBoards.length} tablero(s) creado(s) con IA`)
+    } catch (error: any) {
+      console.error('Error generando tableros con IA:', error)
+      toast.error('Error al generar tableros con IA')
+    } finally {
+      setAiLoading(false)
+    }
+  }
+
   const boardIds = boards.map(b => b.id)
 
   return (
@@ -232,11 +279,26 @@ const KanbanBoardsView = () => {
       <CardContent>
         <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
           <Typography variant='h5'>Tableros</Typography>
-          <ConditionalRender permission='create-boards'>
-            <Button variant='contained' onClick={handleCreateOpen}>
-              Crear tablero
-            </Button>
-          </ConditionalRender>
+          <Stack direction='row' spacing={2}>
+            <ConditionalRender permission='create-boards'>
+              <Tooltip title='Generar con IA'>
+                <IconButton 
+                  color='primary' 
+                  onClick={() => setAiDialogOpen(true)}
+                  sx={{ 
+                    bgcolor: 'primary.main', 
+                    color: 'white',
+                    '&:hover': { bgcolor: 'primary.dark' }
+                  }}
+                >
+                  <Icon icon='mdi:robot-excited' />
+                </IconButton>
+              </Tooltip>
+              <Button variant='contained' onClick={handleCreateOpen}>
+                Crear tablero
+              </Button>
+            </ConditionalRender>
+          </Stack>
         </Box>
 
         {boards.length === 0 && (
@@ -327,6 +389,48 @@ const KanbanBoardsView = () => {
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
           <Button color='error' variant='contained' onClick={handleDeleteConfirm}>
             Eliminar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo de IA */}
+      <Dialog open={aiDialogOpen} onClose={() => !aiLoading && setAiDialogOpen(false)} fullWidth maxWidth='sm'>
+        <DialogTitle>
+          <Stack direction='row' alignItems='center' spacing={1}>
+            <Icon icon='mdi:robot-excited' />
+            <Typography>Generar tableros con IA</Typography>
+          </Stack>
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            label='Describe los tableros que necesitas'
+            placeholder='Ej: Necesito 3 tableros para gestionar el desarrollo de una app: uno para frontend, otro para backend y otro para QA'
+            value={aiPrompt}
+            onChange={e => setAiPrompt(e.target.value)}
+            sx={{ mt: 2 }}
+            disabled={aiLoading}
+            autoFocus
+          />
+          {aiLoading && (
+            <Box display='flex' justifyContent='center' mt={2}>
+              <CircularProgress size={24} />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAiDialogOpen(false)} disabled={aiLoading}>
+            Cancelar
+          </Button>
+          <Button 
+            variant='contained' 
+            onClick={handleAiGenerate}
+            disabled={aiLoading || !aiPrompt.trim()}
+            startIcon={aiLoading ? <CircularProgress size={20} /> : <Icon icon='mdi:sparkles' />}
+          >
+            {aiLoading ? 'Generando...' : 'Generar'}
           </Button>
         </DialogActions>
       </Dialog>

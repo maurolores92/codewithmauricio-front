@@ -13,6 +13,7 @@ type KanbanBoardDndProps = {
   onDragOver: (event: DragOverEvent) => void
   onDragEnd: (event: DragEndEvent) => void
   onCreateTask: (columnId: number) => void
+  onGenerateTasks: (columnId: number) => void
   onEditTask: (task: Task) => void
   onDeleteTask: (task: Task) => void
 }
@@ -26,6 +27,7 @@ const KanbanBoardDnd = ({
   onDragOver,
   onDragEnd,
   onCreateTask,
+  onGenerateTasks,
   onEditTask,
   onDeleteTask
 }: KanbanBoardDndProps) => {
@@ -58,6 +60,7 @@ const KanbanBoardDnd = ({
               column={column}
               tasks={tasksByColumn[column.id] || []}
               onCreateTask={onCreateTask}
+              onGenerateTasks={onGenerateTasks}
               onEditTask={onEditTask}
               onDeleteTask={onDeleteTask}
               isOverTarget={overColumnId === column.id}

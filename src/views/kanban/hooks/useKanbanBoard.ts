@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import apiConnector from 'src/services/api.service'
 import { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
@@ -15,27 +15,42 @@ type UseKanbanBoardResult = {
   taskDialogOpen: boolean
   editTaskDialogOpen: boolean
   deleteTaskDialogOpen: boolean
+  aiColumnDialogOpen: boolean
+  aiColumnLoading: boolean
+  aiTaskDialogOpen: boolean
+  aiTaskLoading: boolean
   newColumnName: string
   newTaskName: string
   newTaskDescription: string
   editTaskName: string
   editTaskDescription: string
+  editTaskAssignedUserId?: number
   newTaskAssignedUserId?: number
   taskToDelete: Task | null
   activeId: string | null
   overColumnId: number | null
+  aiColumnPrompt: string
+  aiTaskPrompt: string
   setColumnDialogOpen: (open: boolean) => void
   setTaskDialogOpen: (open: boolean) => void
   setEditTaskDialogOpen: (open: boolean) => void
+  setAiColumnDialogOpen: (open: boolean) => void
+  setAiTaskDialogOpen: (open: boolean) => void
   setNewColumnName: (value: string) => void
   setNewTaskName: (value: string) => void
   setNewTaskDescription: (value: string) => void
   setEditTaskName: (value: string) => void
   setEditTaskDescription: (value: string) => void
+  setEditTaskAssignedUserId: (value?: number) => void
   setNewTaskAssignedUserId: (value?: number) => void
+  setAiColumnPrompt: (value: string) => void
+  setAiTaskPrompt: (value: string) => void
   handleCreateColumn: () => Promise<void>
+  handleGenerateColumnsWithAI: () => Promise<void>
   handleOpenTaskDialog: (columnId: number) => void
+  handleOpenAiTaskDialog: (columnId: number) => void
   handleCreateTask: () => Promise<void>
+  handleGenerateTasksWithAI: () => Promise<void>
   handleAssignTask: (task: Task, assignedUserId?: number) => Promise<void>
   handleEditTask: (task: Task) => void
   handleSaveEditTask: () => Promise<void>
@@ -57,11 +72,18 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
   const [columnDialogOpen, setColumnDialogOpen] = useState(false)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
   const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false)
+  const [aiColumnDialogOpen, setAiColumnDialogOpen] = useState(false)
+  const [aiColumnLoading, setAiColumnLoading] = useState(false)
+  const [aiColumnPrompt, setAiColumnPrompt] = useState('')
+  const [aiTaskDialogOpen, setAiTaskDialogOpen] = useState(false)
+  const [aiTaskLoading, setAiTaskLoading] = useState(false)
+  const [aiTaskPrompt, setAiTaskPrompt] = useState('')
   const [newColumnName, setNewColumnName] = useState('')
   const [newTaskName, setNewTaskName] = useState('')
   const [newTaskDescription, setNewTaskDescription] = useState('')
   const [editTaskName, setEditTaskName] = useState('')
   const [editTaskDescription, setEditTaskDescription] = useState('')
+  const [editTaskAssignedUserId, setEditTaskAssignedUserId] = useState<number | undefined>()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [deleteTaskDialogOpen, setDeleteTaskDialogOpen] = useState(false)
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null)
@@ -75,7 +97,7 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     [columns]
   )
 
-  const loadBoardData = async () => {
+  const loadBoardData = useCallback(async () => {
     if (!boardId) return
 
     try {
@@ -112,13 +134,13 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     } finally {
       setLoading(false)
     }
-  }
+  }, [boardId])
 
   useEffect(() => {
     if (isReady) {
       loadBoardData()
     }
-  }, [isReady, boardId])
+  }, [isReady, loadBoardData])
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
@@ -377,6 +399,50 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     }
   }
 
+  const handleGenerateColumnsWithAI = async () => {
+    if (!aiColumnPrompt.trim()) {
+      toast.error('Por favor describe las columnas que necesitas')
+
+      return
+    }
+
+    setAiColumnLoading(true)
+    try {
+      // Llamada al endpoint de IA
+      const generatedColumns = await apiConnector.post(`/boards/${boardId}/columns/generate-with-ai`, {
+        prompt: aiColumnPrompt
+      }) as { columns: string[] }
+
+      if (!generatedColumns?.columns || generatedColumns.columns.length === 0) {
+        toast.error('La IA no pudo generar columnas. Intenta reformular tu solicitud.')
+
+        return
+      }
+
+      // Crear las columnas en batch
+      const startPosition = columns.length
+      const newColumns: BoardColumn[] = []
+
+      for (let i = 0; i < generatedColumns.columns.length; i++) {
+        const column = await apiConnector.post(`/boards/${boardId}/columns`, {
+          name: generatedColumns.columns[i],
+          position: startPosition + i
+        }) as BoardColumn
+        newColumns.push(column)
+      }
+
+      setColumns(prev => [...prev, ...newColumns])
+      setAiColumnDialogOpen(false)
+      setAiColumnPrompt('')
+      toast.success(`${newColumns.length} columna(s) creada(s) con IA`)
+    } catch (error: any) {
+      console.error('Error generando columnas con IA:', error)
+      toast.error('Error al generar columnas con IA')
+    } finally {
+      setAiColumnLoading(false)
+    }
+  }
+
   const handleOpenTaskDialog = (columnId: number) => {
     setActiveColumnId(columnId)
     setTaskDialogOpen(true)
@@ -415,6 +481,55 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     }
   }
 
+  const handleGenerateTasksWithAI = async () => {
+    if (!activeColumnId) return
+    if (!aiTaskPrompt.trim()) {
+      toast.error('Por favor describe las tareas que necesitas')
+
+      return
+    }
+
+    setAiTaskLoading(true)
+    try {
+      // Llamada al endpoint de IA
+      const generatedTasks = await apiConnector.post(`/columns/${activeColumnId}/tasks/generate-with-ai`, {
+        prompt: aiTaskPrompt
+      }) as { tasks: Array<{ name: string; description: string }> }
+
+      if (!generatedTasks?.tasks || generatedTasks.tasks.length === 0) {
+        toast.error('La IA no pudo generar tareas. Intenta reformular tu solicitud.')
+
+        return
+      }
+
+      // Crear las tareas en batch
+      const startPosition = tasksByColumn[activeColumnId]?.length || 0
+      const newTasks: Task[] = []
+
+      for (let i = 0; i < generatedTasks.tasks.length; i++) {
+        const task = await apiConnector.post(`/columns/${activeColumnId}/tasks`, {
+          name: generatedTasks.tasks[i].name,
+          description: generatedTasks.tasks[i].description,
+          position: startPosition + i
+        }) as Task
+        newTasks.push(task)
+      }
+
+      setTasksByColumn(prev => ({
+        ...prev,
+        [activeColumnId]: [...(prev[activeColumnId] || []), ...newTasks]
+      }))
+      setAiTaskDialogOpen(false)
+      setAiTaskPrompt('')
+      toast.success(`${newTasks.length} tarea(s) creada(s) con IA`)
+    } catch (error: any) {
+      console.error('Error generando tareas con IA:', error)
+      toast.error('Error al generar tareas con IA')
+    } finally {
+      setAiTaskLoading(false)
+    }
+  }
+
   const handleAssignTask = async (task: Task, assignedUserId?: number) => {
     try {
       const updatedTask = (await apiConnector.put(`/tasks/${task.id}/assign`, {
@@ -443,6 +558,7 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     setEditingTask(task)
     setEditTaskName(task.name)
     setEditTaskDescription(task.description || '')
+    setEditTaskAssignedUserId(task.assignedUserId)
     setEditTaskDialogOpen(true)
   }
 
@@ -457,7 +573,8 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     try {
       const updatedTask = (await apiConnector.put(`/tasks/${editingTask.id}`, {
         name: editTaskName,
-        description: editTaskDescription
+        description: editTaskDescription,
+        assignedUserId: editTaskAssignedUserId
       })) as Task
 
       setTasksByColumn(prev => {
@@ -475,6 +592,7 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
       setEditingTask(null)
       setEditTaskName('')
       setEditTaskDescription('')
+      setEditTaskAssignedUserId(undefined)
       toast.success('Tarea actualizada')
     } catch (error) {
       console.error('Error actualizando tarea:', error)
@@ -520,6 +638,11 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     setNewTaskAssignedUserId(undefined)
   }
 
+  const openTaskDialogForAI = (columnId: number) => {
+    setActiveColumnId(columnId)
+    setAiTaskDialogOpen(true)
+  }
+
   return {
     board,
     sortedColumns,
@@ -530,27 +653,42 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     taskDialogOpen,
     editTaskDialogOpen,
     deleteTaskDialogOpen,
+    aiColumnDialogOpen,
+    aiColumnLoading,
+    aiTaskDialogOpen,
+    aiTaskLoading,
     newColumnName,
     newTaskName,
     newTaskDescription,
     editTaskName,
     editTaskDescription,
+    editTaskAssignedUserId,
     newTaskAssignedUserId,
     taskToDelete,
     activeId,
     overColumnId,
+    aiColumnPrompt,
+    aiTaskPrompt,
     setColumnDialogOpen,
     setTaskDialogOpen,
     setEditTaskDialogOpen,
+    setAiColumnDialogOpen,
+    setAiTaskDialogOpen,
     setNewColumnName,
     setNewTaskName,
     setNewTaskDescription,
     setEditTaskName,
     setEditTaskDescription,
+    setEditTaskAssignedUserId,
     setNewTaskAssignedUserId,
+    setAiColumnPrompt,
+    setAiTaskPrompt,
     handleCreateColumn,
+    handleGenerateColumnsWithAI,
     handleOpenTaskDialog,
+    handleOpenAiTaskDialog: openTaskDialogForAI,
     handleCreateTask,
+    handleGenerateTasksWithAI,
     handleAssignTask,
     handleEditTask,
     handleSaveEditTask,

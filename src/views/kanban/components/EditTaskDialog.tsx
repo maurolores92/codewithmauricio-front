@@ -1,11 +1,16 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, MenuItem, Select, Stack, TextField } from '@mui/material'
+import ConditionalRender from 'src/components/ConditionalRender'
+import { User } from '../types'
 
 type EditTaskDialogProps = {
   open: boolean
   name: string
   description: string
+  assignedUserId?: number
+  users: User[]
   onChangeName: (value: string) => void
   onChangeDescription: (value: string) => void
+  onChangeAssignedUserId: (value?: number) => void
   onCancel: () => void
   onSave: () => void
 }
@@ -14,8 +19,11 @@ const EditTaskDialog = ({
   open,
   name,
   description,
+  assignedUserId,
+  users,
   onChangeName,
   onChangeDescription,
+  onChangeAssignedUserId,
   onCancel,
   onSave
 }: EditTaskDialogProps) => (
@@ -32,6 +40,23 @@ const EditTaskDialog = ({
           multiline
           minRows={3}
         />
+        <ConditionalRender permission='assign-tasks'>
+          <FormControl fullWidth>
+            <InputLabel>Asignar (Opcional)</InputLabel>
+            <Select
+              label='Asignar (Opcional)'
+              value={assignedUserId || ''}
+              onChange={e => onChangeAssignedUserId(e.target.value ? Number(e.target.value) : undefined)}
+            >
+              <MenuItem value=''>Sin asignar</MenuItem>
+              {users.map(user => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.name} {user.lastName || ''}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </ConditionalRender>
       </Stack>
     </DialogContent>
     <DialogActions>

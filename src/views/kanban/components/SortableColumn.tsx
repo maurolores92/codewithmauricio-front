@@ -1,15 +1,17 @@
-import { Box, Button, Card, CardContent, Stack, Typography } from '@mui/material'
+import { Box, Button, Card, CardContent, Stack, Typography, IconButton, Tooltip } from '@mui/material'
 import ConditionalRender from 'src/components/ConditionalRender'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useDroppable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import SortableTask from './SortableTask'
 import { BoardColumn, Task } from '../types'
+import { Icon } from '@iconify/react'
 
 type SortableColumnProps = {
   column: BoardColumn
   tasks: Task[]
   onCreateTask: (columnId: number) => void
+  onGenerateTasks: (columnId: number) => void
   onEditTask: (task: Task) => void
   onDeleteTask: (task: Task) => void
   isOverTarget?: boolean
@@ -20,6 +22,7 @@ const SortableColumn = ({
   column,
   tasks,
   onCreateTask,
+  onGenerateTasks,
   onEditTask,
   onDeleteTask,
   isOverTarget,
@@ -73,17 +76,34 @@ const SortableColumn = ({
         >
           <Typography variant='subtitle1'>{column.name}</Typography>
           <ConditionalRender permission='create-tasks'>
-            <Button
-              size='small'
-              onClick={e => {
-                e.stopPropagation()
-                onCreateTask(column.id)
-              }}
-              onMouseDown={e => e.stopPropagation()}
-              onTouchStart={e => e.stopPropagation()}
-            >
-              Nueva tarea
-            </Button>
+            <Stack direction='row' spacing={1} onMouseDown={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
+              <Tooltip title='Generar con IA'>
+                <IconButton
+                  size='small'
+                  onClick={e => {
+                    e.stopPropagation()
+                    onGenerateTasks(column.id)
+                  }}
+                  sx={{
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    padding: '4px',
+                    '&:hover': { bgcolor: 'primary.dark' }
+                  }}
+                >
+                  <Icon icon='mdi:robot-excited' width={16} height={16} />
+                </IconButton>
+              </Tooltip>
+              <Button
+                size='small'
+                onClick={e => {
+                  e.stopPropagation()
+                  onCreateTask(column.id)
+                }}
+              >
+                Nueva
+              </Button>
+            </Stack>
           </ConditionalRender>
         </Box>
 
