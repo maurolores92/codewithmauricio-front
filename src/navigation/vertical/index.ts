@@ -13,15 +13,22 @@ export type NavItemWithPermission =
 const navigationData = (): NavItemWithPermission[] => {
   return [
     {
+      title: 'Dashboards',
+      icon: 'tabler:smart-home',
+      path: '/dashboards',
+      requiredPermission: 'view-dashboard'
+    },
+    {
+      title: 'Kanban',
+      icon: 'bi:kanban',
+      path: '/kanban',
+      requiredPermission: 'view-boards'
+    },
+    {
       title: 'AI Tools',
       icon: 'eos-icons:ai',
       children: [
-        {
-          title: 'Dashboards',
-          icon: 'tabler:smart-home',
-          path: '/dashboards',
-          requiredPermission: 'view-dashboard'
-        },
+               
         {
           title: 'Post Generator',
           icon: 'iconoir:post',
@@ -42,6 +49,7 @@ const navigationData = (): NavItemWithPermission[] => {
         }
       ]
     },
+    
     {
       title: 'Configuración',
       icon: 'tabler:settings',
@@ -70,11 +78,6 @@ const navigationData = (): NavItemWithPermission[] => {
   ]
 }
 
-/**
- * Filter navigation items based on user permissions
- * @param permissions User permissions array
- * @returns Filtered navigation items
- */
 export const filterNavigationByPermissions = (permissions?: PermissionType[]): VerticalNavItemsType => {
   if (!permissions || permissions.length === 0) {
     return []
@@ -86,7 +89,6 @@ export const filterNavigationByPermissions = (permissions?: PermissionType[]): V
   const filterItems = (items: NavItemWithPermission[]): VerticalNavItemsType => {
     return items
       .filter(item => {
-        // If item has a required permission and user doesn't have it, filter it out
         if (item.requiredPermission && !permissionSlugs.includes(item.requiredPermission)) {
           return false
         }
@@ -94,7 +96,6 @@ export const filterNavigationByPermissions = (permissions?: PermissionType[]): V
         return true
       })
       .map(item => {
-        // If item has children, recursively filter them
         if ('children' in item && Array.isArray(item.children)) {
           return {
             ...item,

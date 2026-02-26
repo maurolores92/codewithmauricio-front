@@ -18,6 +18,12 @@ const navigationData = (): HNavItemWithPermission[] => {
       requiredPermission: 'view-dashboard'
     },
     {
+      title: 'Kanban',
+      icon: 'mdi:view-kanban-outline',
+      path: '/kanban',
+      requiredPermission: 'view-boards'
+    },
+    {
       title: 'Post Generator',
       icon: 'iconoir:post',
       path: '/post-generator',

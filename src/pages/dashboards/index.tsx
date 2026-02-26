@@ -5,6 +5,12 @@ import PermissionGuard from 'src/components/PermissionGuard'
 
 const projects = [
   {
+    title: 'Kanban Board',
+    description: 'Tablero Kanban multi-usuario con drag & drop, roles dinámicos y multi-tenancy. Gestión visual de tareas por columnas.',
+    tags: ['Drag & Drop', 'Multi-tenancy', 'Roles Dinámicos', 'NestJS', 'Next.js'],
+    status: 'Activo'
+  },
+  {
     title: 'Post Generator (LinkedIn)',
     description: 'Generador de contenido con IA, tono y longitud configurables.',
     tags: ['IA', 'Groq', 'NestJS', 'Next.js'],
@@ -14,7 +20,7 @@ const projects = [
     title: 'CV Analyzer',
     description: 'Analizador de CVs con IA para destacar habilidades y sugerir mejoras.',
     tags: ['IA', 'UX', 'React'],
-    status: 'En progreso'
+    status: 'Activo'
   },
   
   {
@@ -69,12 +75,30 @@ const skills = [
       { label: 'Testing', icon: 'mdi:flask-outline' },
       { label: 'Observabilidad', icon: 'mdi:chart-timeline-variant' }
     ]
+  },
+  {
+    title: 'Interactividad & UX',
+    items: [
+      { label: 'Drag & Drop', icon: 'mdi:gesture-swipe' },
+      { label: 'Animaciones', icon: 'mdi:animation-play' },
+      { label: 'dnd-kit', icon: 'mdi:package' },
+      { label: 'Responsive Design', icon: 'mdi:responsive' }
+    ]
+  },
+  {
+    title: 'Arquitectura Avanzada',
+    items: [
+      { label: 'Multi-tenancy', icon: 'mdi:database-multiple' },
+      { label: 'Roles Dinámicos', icon: 'mdi:shield-account-outline' },
+      { label: 'Permisos Granulares', icon: 'mdi:lock-check-outline' },
+      { label: 'Custom Hooks', icon: 'mdi:react' }
+    ]
   }
 ]
 
 const metrics = [
-  { label: 'Tools creadas', value: '1+' },
-  { label: 'Proyectos activos', value: '2+' },
+  { label: 'Tools creadas', value: '3+' },
+  { label: 'Proyectos activos', value: '3+' },
   { label: 'Requests IA', value: '1.2k+' },
   { label: 'Usuarios creados', value: '2+' },
 ]
@@ -86,11 +110,19 @@ const services = [
   },
   {
     title: 'APIs REST seguras',
-    detail: 'JWT, validaciones, roles'
+    detail: 'JWT, validaciones, roles dinámicos'
   },
   {
     title: 'Dashboards y paneles admin',
-    detail: 'MUI, tablas, filtros, métricas'
+    detail: 'MUI, tablas, filtros, métricas, Kanban'
+  },
+  {
+    title: 'Interfaces interactivas',
+    detail: 'Drag & drop, custom hooks, animaciones fluidas'
+  },
+  {
+    title: 'Sistemas multi-usuario',
+    detail: 'Multi-tenancy, control de acceso, roles granulares'
   },
   {
     title: 'Integraciones con IA',

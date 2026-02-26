@@ -11,13 +11,13 @@ export type ACLObj = {
 
 const defineRulesFor = (role: string, subject: string) => {
   const { can, rules } = new AbilityBuilder(AppAbility)
-  const roles = ['superadmin', 'admin']
-  if (roles.includes(role)) {
+  
+  if (role === 'superadmin') {
     can('manage', 'all')
-  } else if (role === 'client') {
-    can(['read'], 'acl-page')
   } else {
-    can(['read', 'create', 'update', 'delete'], subject)
+    // Todos los demás roles (dinámicos o no) pueden acceder a nivel de página
+    // El control de acceso granular se hace con permisos específicos en PermissionGuard/ConditionalRender
+    can(['read', 'create', 'update', 'delete', 'manage'], subject)
   }
 
   return rules
