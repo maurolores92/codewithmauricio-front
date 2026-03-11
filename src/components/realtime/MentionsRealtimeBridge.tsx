@@ -11,7 +11,7 @@ const MentionsRealtimeBridge = () => {
       // Trigger a lightweight background hit so front can stay in sync even
       // if no component is currently listening to the custom event.
       apiConnector
-        .get('/comments/mentions/me', { status: 'unread' })
+        .get('/notifications/me', { status: 'unread' })
         .catch(() => null)
     },
     showToast: true,

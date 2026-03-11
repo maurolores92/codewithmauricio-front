@@ -28,10 +28,10 @@ type TaskDetailsDialogProps = {
   users: User[]
   editName: string
   editDescription: string
-  editAssignedUserId?: number
+  editAssignedUserId?: number | null
   onChangeEditName: (value: string) => void
   onChangeEditDescription: (value: string) => void
-  onChangeEditAssignedUserId: (value?: number) => void
+  onChangeEditAssignedUserId: (value?: number | null) => void
   onSave: () => Promise<void>
   comments: TaskComment[]
   loadingComments: boolean
@@ -189,8 +189,8 @@ const TaskDetailsDialog = ({
                 <InputLabel>Asignar (Opcional)</InputLabel>
                 <Select
                   label='Asignar (Opcional)'
-                  value={editAssignedUserId || ''}
-                  onChange={e => onChangeEditAssignedUserId(e.target.value ? Number(e.target.value) : undefined)}
+                  value={editAssignedUserId ?? ''}
+                  onChange={e => onChangeEditAssignedUserId(e.target.value ? Number(e.target.value) : null)}
                 >
                   <MenuItem value=''>Sin asignar</MenuItem>
                   {users.map(user => (

@@ -24,7 +24,7 @@ type UseKanbanBoardResult = {
   newTaskDescription: string
   editTaskName: string
   editTaskDescription: string
-  editTaskAssignedUserId?: number
+  editTaskAssignedUserId?: number | null
   newTaskAssignedUserId?: number
   taskToDelete: Task | null
   selectedTask: Task | null
@@ -46,7 +46,7 @@ type UseKanbanBoardResult = {
   setNewTaskDescription: (value: string) => void
   setEditTaskName: (value: string) => void
   setEditTaskDescription: (value: string) => void
-  setEditTaskAssignedUserId: (value?: number) => void
+  setEditTaskAssignedUserId: (value?: number | null) => void
   setNewTaskAssignedUserId: (value?: number) => void
   setNewTaskComment: (value: string) => void
   handleSelectMentionedUser: (userId: number) => void
@@ -92,7 +92,7 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
   const [newTaskDescription, setNewTaskDescription] = useState('')
   const [editTaskName, setEditTaskName] = useState('')
   const [editTaskDescription, setEditTaskDescription] = useState('')
-  const [editTaskAssignedUserId, setEditTaskAssignedUserId] = useState<number | undefined>()
+  const [editTaskAssignedUserId, setEditTaskAssignedUserId] = useState<number | null | undefined>()
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [deleteTaskDialogOpen, setDeleteTaskDialogOpen] = useState(false)
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null)
@@ -600,7 +600,7 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
       const updatedTask = (await apiConnector.put(`/tasks/${editingTask.id}`, {
         name: editTaskName,
         description: editTaskDescription,
-        assignedUserId: editTaskAssignedUserId
+        assignedUserId: editTaskAssignedUserId ?? null,
       })) as Task
 
       setTasksByColumn(prev => {
@@ -673,7 +673,7 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     setEditingTask(null)
     setEditTaskName('')
     setEditTaskDescription('')
-    setEditTaskAssignedUserId(undefined)
+    setEditTaskAssignedUserId(null)
   }
 
   const openTaskDialogForAI = (columnId: number) => {

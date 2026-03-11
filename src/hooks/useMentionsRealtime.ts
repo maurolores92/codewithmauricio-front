@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
 import toast from 'react-hot-toast'
 import { useAuth } from 'src/hooks/useAuth'
-import { TaskMentionCreatedPayload, WS_EVENTS } from 'src/websocket/events'
+import { RealtimeNotificationPayload, TaskMentionCreatedPayload, WS_EVENTS } from 'src/websocket/events'
 
 const SOCKET_BASE_URL =
   process.env.NODE_ENV === 'development'
@@ -31,11 +31,17 @@ export const useMentionsRealtime = (options?: UseMentionsRealtimeOptions) => {
       socket.emit(WS_EVENTS.REGISTER_USER, { userId: user.id })
     })
 
-    socket.on(WS_EVENTS.TASK_MENTION_CREATED, (payload: TaskMentionCreatedPayload) => {
+    socket.on(WS_EVENTS.NEW_NOTIFICATION, (payload: RealtimeNotificationPayload) => {
       if (options?.showToast !== false) {
-        toast('Te mencionaron en un comentario')
+        toast(payload?.title || 'Tienes una nueva notificacion')
       }
 
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('mentions-refresh-requested', { detail: payload }))
+      }
+    })
+
+    socket.on(WS_EVENTS.TASK_MENTION_CREATED, (payload: TaskMentionCreatedPayload) => {
       options?.onMentionCreated?.(payload)
 
       if (typeof window !== 'undefined') {
