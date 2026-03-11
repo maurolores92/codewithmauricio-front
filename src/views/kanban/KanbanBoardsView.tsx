@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Box, Button, Card, CardContent, Paper, Stack, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Tooltip, CircularProgress } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import ConditionalRender from 'src/components/ConditionalRender'
 import apiConnector from 'src/services/api.service'
 import { DndContext, DragOverlay, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragStartEvent, DragEndEvent } from '@dnd-kit/core'
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy,  } from '@dnd-kit/sortable' 
+import { arrayMove, rectSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Icon } from '@iconify/react'
 
@@ -41,7 +42,24 @@ const SortableBoard = ({
   return (
     <Paper
       ref={setNodeRef}
-      sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'grab', '&:active': { cursor: 'grabbing' },       ...style     }}
+      sx={theme => ({
+        p: 2,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        minHeight: 88,
+        cursor: 'grab',
+        backgroundColor: alpha(theme.palette.secondary.main, 0.12),
+        boxShadow: theme.shadows[1],
+        '&:hover': {
+          backgroundColor: alpha(theme.palette.secondary.main, 0.18),
+          boxShadow: theme.shadows[3]
+        },
+        '&:active': {
+          cursor: 'grabbing'
+        },
+        ...style
+      })}
       {...attributes}
       {...listeners}
       onClick={() => {
@@ -331,18 +349,28 @@ const KanbanBoardsView = () => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <SortableContext items={boardIds} strategy={verticalListSortingStrategy}>
-              <Stack spacing={2}>
+            <SortableContext items={boardIds} strategy={rectSortingStrategy}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 2,
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    md: 'repeat(2, minmax(0, 1fr))'
+                  }
+                }}
+              >
                 {boards.map(board => (
-                  <SortableBoard
-                    key={board.id}
-                    board={board}
-                    onEdit={handleEditOpen}
-                    onDelete={handleDeleteOpen}
-                    onOpen={handleOpenBoard}
-                  />
+                  <Box key={board.id} sx={{ minWidth: 0 }}>
+                    <SortableBoard
+                      board={board}
+                      onEdit={handleEditOpen}
+                      onDelete={handleDeleteOpen}
+                      onOpen={handleOpenBoard}
+                    />
+                  </Box>
                 ))}
-              </Stack>
+              </Box>
             </SortableContext>
 
             <DragOverlay>
