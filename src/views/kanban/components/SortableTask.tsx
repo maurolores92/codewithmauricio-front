@@ -7,11 +7,11 @@ import { Task } from '../types'
 
 type SortableTaskProps = {
   task: Task
-  onEdit: (task: Task) => void
   onDelete: (task: Task) => void
+  onOpen: (task: Task) => void
 }
 
-const SortableTask = ({ task, onEdit, onDelete }: SortableTaskProps) => {
+const SortableTask = ({ task, onDelete, onOpen }: SortableTaskProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `task-${task.id}`,
     data: {
@@ -43,6 +43,11 @@ const SortableTask = ({ task, onEdit, onDelete }: SortableTaskProps) => {
       }}
       {...attributes}
       {...listeners}
+      onClick={() => {
+        if (!isDragging) {
+          onOpen(task)
+        }
+      }}
     >
       <CardContent>
         <Box display='flex' justifyContent='space-between' alignItems='start' mb={1}>
@@ -50,17 +55,6 @@ const SortableTask = ({ task, onEdit, onDelete }: SortableTaskProps) => {
             {task.name}
           </Typography>
           <Box display='flex' gap={0.5} ml={1} onMouseDown={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
-            <ConditionalRender permission='edit-tasks'>
-              <IconButton
-                size='small'
-                onClick={e => {
-                  e.stopPropagation()
-                  onEdit(task)
-                }}
-              >
-                <Icon icon='material-symbols:edit-outline' />
-              </IconButton>
-            </ConditionalRender>
             <ConditionalRender permission='delete-tasks'>
               <IconButton
                 size='small'

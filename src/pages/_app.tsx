@@ -45,6 +45,7 @@ import { SettingsConsumer, SettingsProvider } from 'src/@core/context/settingsCo
 
 // ** Styled Components
 import ReactHotToast from 'src/@core/styles/libs/react-hot-toast'
+import MentionsRealtimeBridge from 'src/components/realtime/MentionsRealtimeBridge'
 
 // ** Utils Imports
 import { createEmotionCache } from 'src/@core/utils/create-emotion-cache'
@@ -154,6 +155,7 @@ const App = (props: ExtendedAppProps) => {
               {({ settings }) => {
                 return (
                   <ThemeComponent settings={settings}>
+                    <MentionsRealtimeBridge />
                     <Guard authGuard={authGuard} guestGuard={guestGuard}>
                       <AclGuard aclAbilities={aclAbilities} guestGuard={guestGuard} authGuard={authGuard}>
                         {getLayout(<Component {...pageProps} />)}

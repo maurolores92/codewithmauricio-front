@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import apiConnector from 'src/services/api.service'
 import { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
-import { Board, BoardColumn, Task, User } from '../types'
+import { Board, BoardColumn, Task, TaskComment, User } from '../types'
 
 type UseKanbanBoardResult = {
   board: Board | null
@@ -13,7 +13,7 @@ type UseKanbanBoardResult = {
   loading: boolean
   columnDialogOpen: boolean
   taskDialogOpen: boolean
-  editTaskDialogOpen: boolean
+  taskDetailsDialogOpen: boolean
   deleteTaskDialogOpen: boolean
   aiColumnDialogOpen: boolean
   aiColumnLoading: boolean
@@ -27,13 +27,18 @@ type UseKanbanBoardResult = {
   editTaskAssignedUserId?: number
   newTaskAssignedUserId?: number
   taskToDelete: Task | null
+  selectedTask: Task | null
+  taskComments: TaskComment[]
+  loadingTaskComments: boolean
+  newTaskComment: string
+  mentionedUserIds: number[]
   activeId: string | null
   overColumnId: number | null
   aiColumnPrompt: string
   aiTaskPrompt: string
   setColumnDialogOpen: (open: boolean) => void
   setTaskDialogOpen: (open: boolean) => void
-  setEditTaskDialogOpen: (open: boolean) => void
+  setTaskDetailsDialogOpen: (open: boolean) => void
   setAiColumnDialogOpen: (open: boolean) => void
   setAiTaskDialogOpen: (open: boolean) => void
   setNewColumnName: (value: string) => void
@@ -43,6 +48,8 @@ type UseKanbanBoardResult = {
   setEditTaskDescription: (value: string) => void
   setEditTaskAssignedUserId: (value?: number) => void
   setNewTaskAssignedUserId: (value?: number) => void
+  setNewTaskComment: (value: string) => void
+  handleSelectMentionedUser: (userId: number) => void
   setAiColumnPrompt: (value: string) => void
   setAiTaskPrompt: (value: string) => void
   handleCreateColumn: () => Promise<void>
@@ -52,12 +59,14 @@ type UseKanbanBoardResult = {
   handleCreateTask: () => Promise<void>
   handleGenerateTasksWithAI: () => Promise<void>
   handleAssignTask: (task: Task, assignedUserId?: number) => Promise<void>
-  handleEditTask: (task: Task) => void
+  handleOpenTaskDetails: (task: Task) => Promise<void>
   handleSaveEditTask: () => Promise<void>
+  handleCreateTaskComment: () => Promise<void>
   handleDeleteTask: (task: Task) => void
   handleConfirmDeleteTask: () => Promise<void>
   closeDeleteDialog: () => void
   closeTaskDialog: () => void
+  closeTaskDetailsDialog: () => void
   handleDragStart: (event: DragStartEvent) => void
   handleDragOver: (event: DragOverEvent) => void
   handleDragEnd: (event: DragEndEvent) => Promise<void>
@@ -71,7 +80,7 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
   const [loading, setLoading] = useState(true)
   const [columnDialogOpen, setColumnDialogOpen] = useState(false)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
-  const [editTaskDialogOpen, setEditTaskDialogOpen] = useState(false)
+  const [taskDetailsDialogOpen, setTaskDetailsDialogOpen] = useState(false)
   const [aiColumnDialogOpen, setAiColumnDialogOpen] = useState(false)
   const [aiColumnLoading, setAiColumnLoading] = useState(false)
   const [aiColumnPrompt, setAiColumnPrompt] = useState('')
@@ -87,6 +96,11 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [deleteTaskDialogOpen, setDeleteTaskDialogOpen] = useState(false)
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [taskComments, setTaskComments] = useState<TaskComment[]>([])
+  const [loadingTaskComments, setLoadingTaskComments] = useState(false)
+  const [newTaskComment, setNewTaskComment] = useState('')
+  const [mentionedUserIds, setMentionedUserIds] = useState<number[]>([])
   const [activeColumnId, setActiveColumnId] = useState<number | null>(null)
   const [newTaskAssignedUserId, setNewTaskAssignedUserId] = useState<number | undefined>()
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -554,12 +568,24 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     }
   }
 
-  const handleEditTask = (task: Task) => {
+  const handleOpenTaskDetails = async (task: Task) => {
+    setSelectedTask(task)
     setEditingTask(task)
     setEditTaskName(task.name)
     setEditTaskDescription(task.description || '')
     setEditTaskAssignedUserId(task.assignedUserId)
-    setEditTaskDialogOpen(true)
+    setTaskDetailsDialogOpen(true)
+    setLoadingTaskComments(true)
+    try {
+      const comments = await apiConnector.get<TaskComment[]>(`/tasks/${task.id}/comments`)
+      setTaskComments(comments || [])
+    } catch (error) {
+      console.error('Error cargando comentarios de la tarea:', error)
+      toast.error('No se pudieron cargar los comentarios')
+      setTaskComments([])
+    } finally {
+      setLoadingTaskComments(false)
+    }
   }
 
   const handleSaveEditTask = async () => {
@@ -588,11 +614,11 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
         }
       })
 
-      setEditTaskDialogOpen(false)
-      setEditingTask(null)
-      setEditTaskName('')
-      setEditTaskDescription('')
-      setEditTaskAssignedUserId(undefined)
+      setSelectedTask(updatedTask)
+      setEditingTask(updatedTask)
+      setEditTaskName(updatedTask.name)
+      setEditTaskDescription(updatedTask.description || '')
+      setEditTaskAssignedUserId(updatedTask.assignedUserId)
       toast.success('Tarea actualizada')
     } catch (error) {
       console.error('Error actualizando tarea:', error)
@@ -638,9 +664,67 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     setNewTaskAssignedUserId(undefined)
   }
 
+  const closeTaskDetailsDialog = () => {
+    setTaskDetailsDialogOpen(false)
+    setSelectedTask(null)
+    setTaskComments([])
+    setNewTaskComment('')
+    setMentionedUserIds([])
+    setEditingTask(null)
+    setEditTaskName('')
+    setEditTaskDescription('')
+    setEditTaskAssignedUserId(undefined)
+  }
+
   const openTaskDialogForAI = (columnId: number) => {
     setActiveColumnId(columnId)
     setAiTaskDialogOpen(true)
+  }
+
+  const handleSelectMentionedUser = (userId: number) => {
+    setMentionedUserIds(prev => {
+      if (prev.includes(userId)) {
+        return prev
+      }
+
+      return [...prev, userId]
+    })
+  }
+
+  const handleCreateTaskComment = async () => {
+    if (!selectedTask) return
+    if (!newTaskComment.trim()) {
+      toast.error('Escribe un comentario')
+
+      return
+    }
+
+    try {
+      const filteredMentionedUserIds = mentionedUserIds.filter(userId => {
+        const user = users.find(item => item.id === userId)
+        if (!user) {
+          return false
+        }
+
+        const fullName = `${user.name} ${user.lastName || ''}`.trim().toLowerCase()
+
+        return newTaskComment.toLowerCase().includes(`@${fullName}`)
+      })
+
+      await apiConnector.post(`/tasks/${selectedTask.id}/comments`, {
+        content: newTaskComment,
+        mentionedUserIds: filteredMentionedUserIds,
+      })
+
+      const comments = await apiConnector.get<TaskComment[]>(`/tasks/${selectedTask.id}/comments`)
+      setTaskComments(comments || [])
+      setNewTaskComment('')
+      setMentionedUserIds([])
+      toast.success('Comentario agregado')
+    } catch (error) {
+      console.error('Error creando comentario:', error)
+      toast.error('No se pudo agregar el comentario')
+    }
   }
 
   return {
@@ -651,7 +735,7 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     loading,
     columnDialogOpen,
     taskDialogOpen,
-    editTaskDialogOpen,
+    taskDetailsDialogOpen,
     deleteTaskDialogOpen,
     aiColumnDialogOpen,
     aiColumnLoading,
@@ -665,13 +749,18 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     editTaskAssignedUserId,
     newTaskAssignedUserId,
     taskToDelete,
+    selectedTask,
+    taskComments,
+    loadingTaskComments,
+    newTaskComment,
+    mentionedUserIds,
     activeId,
     overColumnId,
     aiColumnPrompt,
     aiTaskPrompt,
     setColumnDialogOpen,
     setTaskDialogOpen,
-    setEditTaskDialogOpen,
+    setTaskDetailsDialogOpen,
     setAiColumnDialogOpen,
     setAiTaskDialogOpen,
     setNewColumnName,
@@ -681,21 +770,25 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     setEditTaskDescription,
     setEditTaskAssignedUserId,
     setNewTaskAssignedUserId,
+    setNewTaskComment,
     setAiColumnPrompt,
     setAiTaskPrompt,
     handleCreateColumn,
     handleGenerateColumnsWithAI,
     handleOpenTaskDialog,
     handleOpenAiTaskDialog: openTaskDialogForAI,
+    handleSelectMentionedUser,
     handleCreateTask,
     handleGenerateTasksWithAI,
     handleAssignTask,
-    handleEditTask,
+    handleOpenTaskDetails,
     handleSaveEditTask,
+    handleCreateTaskComment,
     handleDeleteTask,
     handleConfirmDeleteTask,
     closeDeleteDialog,
     closeTaskDialog,
+    closeTaskDetailsDialog,
     handleDragStart,
     handleDragOver,
     handleDragEnd

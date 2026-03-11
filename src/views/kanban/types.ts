@@ -25,3 +25,14 @@ export type Task = {
   boardColumnId: number
   assignedUser?: User
 }
+
+export type TaskComment = {
+  id: number
+  taskId: number
+  parentCommentId?: number
+  content: string
+  createdBy: number
+  createdAt?: string
+  author?: User
+  replies: TaskComment[]
+}

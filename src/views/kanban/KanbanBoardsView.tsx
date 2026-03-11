@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Box, Button, Card, CardContent, Paper, Stack, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Tooltip, CircularProgress } from '@mui/material'
-import Link from 'next/link'
+import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import ConditionalRender from 'src/components/ConditionalRender'
 import apiConnector from 'src/services/api.service'
@@ -17,7 +17,17 @@ type Board = {
 }
 
 // Componente para board draggable
-const SortableBoard = ({ board, onEdit, onDelete }: { board: Board; onEdit: (board: Board) => void; onDelete: (board: Board) => void }) => {
+const SortableBoard = ({
+  board,
+  onEdit,
+  onDelete,
+  onOpen,
+}: {
+  board: Board
+  onEdit: (board: Board) => void
+  onDelete: (board: Board) => void
+  onOpen: (board: Board) => void
+}) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: board.id
   })
@@ -34,6 +44,19 @@ const SortableBoard = ({ board, onEdit, onDelete }: { board: Board; onEdit: (boa
       sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'grab', '&:active': { cursor: 'grabbing' },       ...style     }}
       {...attributes}
       {...listeners}
+      onClick={() => {
+        if (!isDragging) {
+          onOpen(board)
+        }
+      }}
+      role='button'
+      tabIndex={0}
+      onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onOpen(board)
+        }
+      }}
     >
       <Box flex={1}>
         <Typography variant='subtitle1'>{board.name}</Typography>
@@ -67,21 +90,13 @@ const SortableBoard = ({ board, onEdit, onDelete }: { board: Board; onEdit: (boa
             <Icon icon='mdi:delete'/>
           </IconButton>
         </ConditionalRender>
-        <Button
-          component={Link}
-          href={`/kanban/boards/${board.id}`}
-          variant='outlined'
-          size='small'
-          onClick={e => e.stopPropagation()}
-        >
-          Abrir
-        </Button>
       </Box>
     </Paper>
   )
 }
 
 const KanbanBoardsView = () => {
+  const router = useRouter()
   const [boards, setBoards] = useState<Board[]>([])
   const [activeId, setActiveId] = useState<number | null>(null)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -274,6 +289,10 @@ const KanbanBoardsView = () => {
 
   const boardIds = boards.map(b => b.id)
 
+  const handleOpenBoard = (board: Board) => {
+    router.push(`/kanban/boards/${board.id}`)
+  }
+
   return (
     <Card>
       <CardContent>
@@ -315,7 +334,13 @@ const KanbanBoardsView = () => {
             <SortableContext items={boardIds} strategy={verticalListSortingStrategy}>
               <Stack spacing={2}>
                 {boards.map(board => (
-                  <SortableBoard key={board.id} board={board} onEdit={handleEditOpen} onDelete={handleDeleteOpen} />
+                  <SortableBoard
+                    key={board.id}
+                    board={board}
+                    onEdit={handleEditOpen}
+                    onDelete={handleDeleteOpen}
+                    onOpen={handleOpenBoard}
+                  />
                 ))}
               </Stack>
             </SortableContext>

@@ -14,8 +14,8 @@ type KanbanBoardDndProps = {
   onDragEnd: (event: DragEndEvent) => void
   onCreateTask: (columnId: number) => void
   onGenerateTasks: (columnId: number) => void
-  onEditTask: (task: Task) => void
   onDeleteTask: (task: Task) => void
+  onOpenTaskDetails: (task: Task) => void
 }
 
 const KanbanBoardDnd = ({
@@ -28,8 +28,8 @@ const KanbanBoardDnd = ({
   onDragEnd,
   onCreateTask,
   onGenerateTasks,
-  onEditTask,
-  onDeleteTask
+  onDeleteTask,
+  onOpenTaskDetails
 }: KanbanBoardDndProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -61,8 +61,8 @@ const KanbanBoardDnd = ({
               tasks={tasksByColumn[column.id] || []}
               onCreateTask={onCreateTask}
               onGenerateTasks={onGenerateTasks}
-              onEditTask={onEditTask}
               onDeleteTask={onDeleteTask}
+              onOpenTaskDetails={onOpenTaskDetails}
               isOverTarget={overColumnId === column.id}
               numberOfColumns={columns.length}
             />

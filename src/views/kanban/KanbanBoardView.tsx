@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import ConditionalRender from 'src/components/ConditionalRender'
 import ColumnDialog from 'src/views/kanban/components/ColumnDialog'
 import TaskDialog from 'src/views/kanban/components/TaskDialog'
-import EditTaskDialog from 'src/views/kanban/components/EditTaskDialog'
+import TaskDetailsDialog from 'src/views/kanban/components/TaskDetailsDialog'
 import ConfirmDeleteDialog from 'src/components/dialogs/ConfirmDeleteDialog'
 import KanbanBoardDnd from 'src/views/kanban/components/KanbanBoardDnd'
 import useKanbanBoard from 'src/views/kanban/hooks/useKanbanBoard'
@@ -20,7 +20,7 @@ const KanbanBoardView = () => {
     loading,
     columnDialogOpen,
     taskDialogOpen,
-    editTaskDialogOpen,
+    taskDetailsDialogOpen,
     deleteTaskDialogOpen,
     aiColumnDialogOpen,
     aiColumnLoading,
@@ -34,12 +34,16 @@ const KanbanBoardView = () => {
     editTaskAssignedUserId,
     newTaskAssignedUserId,
     taskToDelete,
+    selectedTask,
+    taskComments,
+    loadingTaskComments,
+    newTaskComment,
+    mentionedUserIds,
     activeId,
     overColumnId,
     aiColumnPrompt,
     aiTaskPrompt,
     setColumnDialogOpen,
-    setEditTaskDialogOpen,
     setAiColumnDialogOpen,
     setAiTaskDialogOpen,
     setNewColumnName,
@@ -51,18 +55,22 @@ const KanbanBoardView = () => {
     setNewTaskAssignedUserId,
     setAiColumnPrompt,
     setAiTaskPrompt,
+    setNewTaskComment,
     handleCreateColumn,
     handleGenerateColumnsWithAI,
     handleOpenTaskDialog,
     handleOpenAiTaskDialog,
     handleCreateTask,
     handleGenerateTasksWithAI,
-    handleEditTask,
+    handleOpenTaskDetails,
     handleSaveEditTask,
+    handleSelectMentionedUser,
+    handleCreateTaskComment,
     handleDeleteTask,
     handleConfirmDeleteTask,
     closeDeleteDialog,
     closeTaskDialog,
+    closeTaskDetailsDialog,
     handleDragStart,
     handleDragOver,
     handleDragEnd
@@ -112,8 +120,8 @@ const KanbanBoardView = () => {
         onDragEnd={handleDragEnd}
         onCreateTask={handleOpenTaskDialog}
         onGenerateTasks={handleOpenAiTaskDialog}
-        onEditTask={handleEditTask}
         onDeleteTask={handleDeleteTask}
+        onOpenTaskDetails={handleOpenTaskDetails}
       />
 
       <ColumnDialog
@@ -137,17 +145,25 @@ const KanbanBoardView = () => {
         onCreate={handleCreateTask}
       />
 
-      <EditTaskDialog
-        open={editTaskDialogOpen}
-        name={editTaskName}
-        description={editTaskDescription}
-        assignedUserId={editTaskAssignedUserId}
+      <TaskDetailsDialog
+        open={taskDetailsDialogOpen}
+        task={selectedTask}
         users={users}
-        onChangeName={setEditTaskName}
-        onChangeDescription={setEditTaskDescription}
-        onChangeAssignedUserId={setEditTaskAssignedUserId}
-        onCancel={() => setEditTaskDialogOpen(false)}
+        editName={editTaskName}
+        editDescription={editTaskDescription}
+        editAssignedUserId={editTaskAssignedUserId}
+        onChangeEditName={setEditTaskName}
+        onChangeEditDescription={setEditTaskDescription}
+        onChangeEditAssignedUserId={setEditTaskAssignedUserId}
         onSave={handleSaveEditTask}
+        comments={taskComments}
+        loadingComments={loadingTaskComments}
+        newComment={newTaskComment}
+        mentionedUserIds={mentionedUserIds}
+        onSelectMentionedUser={handleSelectMentionedUser}
+        onChangeNewComment={setNewTaskComment}
+        onClose={closeTaskDetailsDialog}
+        onSubmitComment={handleCreateTaskComment}
       />
 
       <ConfirmDeleteDialog

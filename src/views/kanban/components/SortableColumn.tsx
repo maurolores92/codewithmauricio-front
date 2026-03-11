@@ -12,8 +12,8 @@ type SortableColumnProps = {
   tasks: Task[]
   onCreateTask: (columnId: number) => void
   onGenerateTasks: (columnId: number) => void
-  onEditTask: (task: Task) => void
   onDeleteTask: (task: Task) => void
+  onOpenTaskDetails: (task: Task) => void
   isOverTarget?: boolean
   numberOfColumns: number
 }
@@ -23,8 +23,8 @@ const SortableColumn = ({
   tasks,
   onCreateTask,
   onGenerateTasks,
-  onEditTask,
   onDeleteTask,
+  onOpenTaskDetails,
   isOverTarget,
   numberOfColumns
 }: SortableColumnProps) => {
@@ -125,7 +125,12 @@ const SortableColumn = ({
             }}
           >
             {sortedTasks.map(task => (
-              <SortableTask key={task.id} task={task} onEdit={onEditTask} onDelete={onDeleteTask} />
+              <SortableTask
+                key={task.id}
+                task={task}
+                onDelete={onDeleteTask}
+                onOpen={onOpenTaskDetails}
+              />
             ))}
           </Stack>
         </SortableContext>
