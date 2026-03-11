@@ -59,6 +59,10 @@ const getNotificationMessage = (item: NotificationItem): string => {
   return item.message || 'Sin contenido'
 }
 
+const canOpenTaskFromNotification = (item: NotificationItem): boolean => {
+  return typeof item.data?.boardId === 'number' && typeof item.data?.taskId === 'number'
+}
+
 const MentionsBell = () => {
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -107,6 +111,19 @@ const MentionsBell = () => {
   const goToNotificationsPage = () => {
     setOpen(false)
     router.push('/notifications')
+  }
+
+  const openNotificationTask = async (item: NotificationItem) => {
+    if (!canOpenTaskFromNotification(item)) {
+      return
+    }
+
+    if (!item.isRead) {
+      await markNotificationAsRead(item.id)
+    }
+
+    setOpen(false)
+    router.push(`/kanban/boards/${item.data?.boardId}?taskId=${item.data?.taskId}`)
   }
 
   useEffect(() => {
@@ -236,6 +253,13 @@ const MentionsBell = () => {
                           <Typography variant='body2' color='text.secondary'>
                             {getNotificationMessage(item)}
                           </Typography>
+                          {canOpenTaskFromNotification(item) && (
+                            <Box sx={{ mt: 1 }}>
+                              <Button size='small' variant='text' onClick={() => openNotificationTask(item)}>
+                                Abrir tarea
+                              </Button>
+                            </Box>
+                          )}
                         </>
                       }
                     />

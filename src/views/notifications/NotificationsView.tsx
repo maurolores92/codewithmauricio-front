@@ -58,6 +58,10 @@ const getNotificationMessage = (item: NotificationItem): string => {
   return item.message || 'Sin contenido'
 }
 
+const canOpenTaskFromNotification = (item: NotificationItem): boolean => {
+  return typeof item.data?.boardId === 'number' && typeof item.data?.taskId === 'number'
+}
+
 const formatDate = (date?: string): string => {
   if (!date) return ''
 
@@ -104,6 +108,18 @@ const NotificationsView = () => {
     } finally {
       setMarkingAll(false)
     }
+  }
+
+  const openNotificationTask = async (item: NotificationItem) => {
+    if (!canOpenTaskFromNotification(item)) {
+      return
+    }
+
+    if (!item.isRead) {
+      await markNotificationAsRead(item.id)
+    }
+
+    router.push(`/kanban/boards/${item.data?.boardId}?taskId=${item.data?.taskId}`)
   }
 
   useEffect(() => {
@@ -207,11 +223,18 @@ const NotificationsView = () => {
                       </Typography>
                     </TableCell>
                     <TableCell align='right'>
-                      {!item.isRead && (
-                        <Button size='small' onClick={() => markNotificationAsRead(item.id)}>
-                          Marcar leida
-                        </Button>
-                      )}
+                      <Stack direction='row' spacing={1} justifyContent='flex-end'>
+                        {canOpenTaskFromNotification(item) && (
+                          <Button size='small' variant='text' onClick={() => openNotificationTask(item)}>
+                            Abrir tarea
+                          </Button>
+                        )}
+                        {!item.isRead && (
+                          <Button size='small' onClick={() => markNotificationAsRead(item.id)}>
+                            Marcar leida
+                          </Button>
+                        )}
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))}

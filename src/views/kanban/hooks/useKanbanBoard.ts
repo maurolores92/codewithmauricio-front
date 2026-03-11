@@ -62,6 +62,7 @@ type UseKanbanBoardResult = {
   handleOpenTaskDetails: (task: Task) => Promise<void>
   handleSaveEditTask: () => Promise<void>
   handleCreateTaskComment: () => Promise<void>
+  handleDeleteTaskComment: (commentId: number) => Promise<void>
   handleDeleteTask: (task: Task) => void
   handleConfirmDeleteTask: () => Promise<void>
   closeDeleteDialog: () => void
@@ -727,6 +728,21 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     }
   }
 
+  const handleDeleteTaskComment = async (commentId: number) => {
+    if (!selectedTask) return
+
+    try {
+      await apiConnector.remove(`/comments/${commentId}`)
+
+      const comments = await apiConnector.get<TaskComment[]>(`/tasks/${selectedTask.id}/comments`)
+      setTaskComments(comments || [])
+      toast.success('Comentario eliminado')
+    } catch (error) {
+      console.error('Error eliminando comentario:', error)
+      toast.error('No se pudo eliminar el comentario')
+    }
+  }
+
   return {
     board,
     sortedColumns,
@@ -784,6 +800,7 @@ const useKanbanBoard = (boardId: number, isReady: boolean): UseKanbanBoardResult
     handleOpenTaskDetails,
     handleSaveEditTask,
     handleCreateTaskComment,
+    handleDeleteTaskComment,
     handleDeleteTask,
     handleConfirmDeleteTask,
     closeDeleteDialog,

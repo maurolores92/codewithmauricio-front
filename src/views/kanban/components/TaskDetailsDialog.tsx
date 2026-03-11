@@ -20,6 +20,7 @@ import {
   Typography,
 } from '@mui/material'
 import ConditionalRender from 'src/components/ConditionalRender'
+import { useAuth } from 'src/hooks/useAuth'
 import { Task, TaskComment, User } from '../types'
 
 type TaskDetailsDialogProps = {
@@ -39,6 +40,7 @@ type TaskDetailsDialogProps = {
   mentionedUserIds: number[]
   onSelectMentionedUser: (userId: number) => void
   onChangeNewComment: (value: string) => void
+  onDeleteComment: (commentId: number) => Promise<void>
   onClose: () => void
   onSubmitComment: () => Promise<void>
 }
@@ -49,12 +51,24 @@ const getAuthorName = (comment: TaskComment): string => {
   return `${comment.author.name} ${comment.author.lastName || ''}`.trim()
 }
 
-const CommentItem = ({ comment, level = 0 }: { comment: TaskComment; level?: number }) => {
+const CommentItem = ({
+  comment,
+  level = 0,
+  currentUserId,
+  onDeleteComment,
+}: {
+  comment: TaskComment
+  level?: number
+  currentUserId?: number
+  onDeleteComment: (commentId: number) => Promise<void>
+}) => {
   const createdAt = useMemo(() => {
     if (!comment.createdAt) return ''
 
     return new Date(comment.createdAt).toLocaleString()
   }, [comment.createdAt])
+
+  const canDelete = currentUserId && comment.createdBy === currentUserId && !comment.isDeleted
 
   return (
     <Box sx={{ pl: level > 0 ? 4 : 0, pt: 2 }}>
@@ -68,8 +82,13 @@ const CommentItem = ({ comment, level = 0 }: { comment: TaskComment; level?: num
                 {createdAt}
               </Typography>
             )}
+            {canDelete && (
+              <Button size='small' color='error' onClick={() => onDeleteComment(comment.id)}>
+                Eliminar
+              </Button>
+            )}
           </Stack>
-          <Typography variant='body2' sx={{ mt: 0.5, whiteSpace: 'pre-wrap' }}>
+          <Typography variant='body2' sx={{ mt: 0.5, whiteSpace: 'pre-wrap', fontStyle: comment.isDeleted ? 'italic' : 'normal', color: comment.isDeleted ? 'text.disabled' : 'text.primary' }}>
             {comment.content}
           </Typography>
         </Box>
@@ -78,7 +97,13 @@ const CommentItem = ({ comment, level = 0 }: { comment: TaskComment; level?: num
       {comment.replies?.length > 0 && (
         <Box sx={{ mt: 1 }}>
           {comment.replies.map(reply => (
-            <CommentItem key={reply.id} comment={reply} level={level + 1} />
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              level={level + 1}
+              currentUserId={currentUserId}
+              onDeleteComment={onDeleteComment}
+            />
           ))}
         </Box>
       )}
@@ -103,9 +128,11 @@ const TaskDetailsDialog = ({
   mentionedUserIds,
   onSelectMentionedUser,
   onChangeNewComment,
+  onDeleteComment,
   onClose,
   onSubmitComment,
 }: TaskDetailsDialogProps) => {
+  const { user } = useAuth()
   const [mentionQuery, setMentionQuery] = useState('')
   const [mentionStart, setMentionStart] = useState<number | null>(null)
   const [mentionCursor, setMentionCursor] = useState<number | null>(null)
@@ -267,7 +294,12 @@ const TaskDetailsDialog = ({
           ) : (
             <Box sx={{ maxHeight: 360, overflowY: 'auto', pr: 1 }}>
               {comments.map(comment => (
-                <CommentItem key={comment.id} comment={comment} />
+                <CommentItem
+                  key={comment.id}
+                  comment={comment}
+                  currentUserId={user?.id}
+                  onDeleteComment={onDeleteComment}
+                />
               ))}
             </Box>
           )}

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Box, Button, CircularProgress, Typography, Stack, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material'
 import { useRouter } from 'next/router'
 import ConditionalRender from 'src/components/ConditionalRender'
@@ -66,6 +67,7 @@ const KanbanBoardView = () => {
     handleSaveEditTask,
     handleSelectMentionedUser,
     handleCreateTaskComment,
+    handleDeleteTaskComment,
     handleDeleteTask,
     handleConfirmDeleteTask,
     closeDeleteDialog,
@@ -75,6 +77,29 @@ const KanbanBoardView = () => {
     handleDragOver,
     handleDragEnd
   } = useKanbanBoard(boardId, router.isReady)
+
+  useEffect(() => {
+    const requestedTaskId = Number(router.query.taskId)
+    if (!router.isReady || !requestedTaskId || !Number.isFinite(requestedTaskId)) {
+      return
+    }
+
+    if (taskDetailsDialogOpen && selectedTask?.id === requestedTaskId) {
+      return
+    }
+
+    const requestedTask = Object.values(tasksByColumn)
+      .flat()
+      .find(task => task.id === requestedTaskId)
+
+    if (!requestedTask) {
+      return
+    }
+
+    handleOpenTaskDetails(requestedTask).then(() => {
+      router.replace(`/kanban/boards/${boardId}`, undefined, { shallow: true })
+    })
+  }, [router, boardId, tasksByColumn, handleOpenTaskDetails, taskDetailsDialogOpen, selectedTask])
 
   if (loading) {
     return (
@@ -162,6 +187,7 @@ const KanbanBoardView = () => {
         mentionedUserIds={mentionedUserIds}
         onSelectMentionedUser={handleSelectMentionedUser}
         onChangeNewComment={setNewTaskComment}
+        onDeleteComment={handleDeleteTaskComment}
         onClose={closeTaskDetailsDialog}
         onSubmitComment={handleCreateTaskComment}
       />

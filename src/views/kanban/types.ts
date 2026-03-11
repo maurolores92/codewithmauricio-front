@@ -33,6 +33,8 @@ export type TaskComment = {
   content: string
   createdBy: number
   createdAt?: string
+  isDeleted?: boolean
+  deletedAt?: string
   author?: User
   replies: TaskComment[]
 }
