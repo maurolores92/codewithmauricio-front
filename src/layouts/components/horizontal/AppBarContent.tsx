@@ -8,6 +8,7 @@ import { Settings } from 'src/@core/context/settingsContext'
 import Autocomplete from 'src/layouts/components/Autocomplete'
 import ModeToggler from 'src/@core/layouts/components/shared-components/ModeToggler'
 import UserDropdown from 'src/@core/layouts/components/shared-components/UserDropdown'
+import MentionsBell from 'src/@core/layouts/components/shared-components/MentionsBell'
 import { useAuth } from 'src/hooks/useAuth'
 
 interface Props {
@@ -30,6 +31,7 @@ const AppBarContent = (props: Props) => {
       <ModeToggler settings={settings} saveSettings={saveSettings} />
       {auth.user && (
         <>
+          <MentionsBell />
           <UserDropdown settings={settings} />
         </>
       )}
