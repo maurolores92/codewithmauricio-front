@@ -10,31 +10,13 @@ const projects = [
     tags: ['Drag & Drop', 'Multi-tenancy', 'Roles Dinámicos', 'NestJS', 'Next.js'],
     status: 'Activo'
   },
-  {
-    title: 'Post Generator (LinkedIn)',
-    description: 'Generador de contenido con IA, tono y longitud configurables.',
-    tags: ['IA', 'Groq', 'NestJS', 'Next.js'],
-    status: 'Activo'
-  },
-  {
-    title: 'CV Analyzer',
-    description: 'Analizador de CVs con IA para destacar habilidades y sugerir mejoras.',
-    tags: ['IA', 'UX', 'React'],
-    status: 'Activo'
-  },
-  
+
   {
     title: 'Mini CRM',
     description: 'Gestion simple de clientes y recordatorios.',
     tags: ['Backend', 'Dashboard'],
     status: 'En progreso'
   },
-  {
-    title: 'Chat con PDFs',
-    description: 'Interacción con documentos PDF utilizando IA para extraer información y responder preguntas.',
-    tags: ['IA', 'PDF', 'React'],
-    status: 'Idea'
-  }
 ]
 
 const skills = [

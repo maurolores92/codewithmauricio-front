@@ -35,7 +35,6 @@ const SortableBoard = ({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
     opacity: isDragging ? 0.5 : 1
   }
 
@@ -43,20 +42,28 @@ const SortableBoard = ({
     <Paper
       ref={setNodeRef}
       sx={theme => ({
-        p: 2,
+        p: 2.5,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        minHeight: 88,
+        minHeight: 96,
         cursor: 'grab',
-        backgroundColor: alpha(theme.palette.secondary.main, 0.12),
+        backgroundColor: alpha(theme.palette.text.primary, 0.07),
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 2,
         boxShadow: theme.shadows[1],
+        transition: transition 
+          ? `${transition}, background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease` 
+          : 'all 0.2s ease-in-out',
         '&:hover': {
-          backgroundColor: alpha(theme.palette.secondary.main, 0.18),
-          boxShadow: theme.shadows[3]
+          backgroundColor: alpha(theme.palette.text.primary, 0.1),
+          borderColor: theme.palette.primary.main,
+          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+          transform: 'translateY(-2px)'
         },
         '&:active': {
-          cursor: 'grabbing'
+          cursor: 'grabbing',
+          transform: 'translateY(0)'
         },
         ...style
       })}
@@ -77,36 +84,56 @@ const SortableBoard = ({
       }}
     >
       <Box flex={1}>
-        <Typography variant='subtitle1'>{board.name}</Typography>
+        <Typography variant='subtitle1' sx={{ fontWeight: 600, mb: 0.5 }}>
+          {board.name}
+        </Typography>
         {board.createdAt && (
-          <Typography variant='caption' color='text.secondary'>
+          <Typography variant='caption' color='text.secondary' sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Icon icon='mdi:calendar-blank' fontSize={14} />
             Creado: {new Date(board.createdAt).toLocaleDateString()}
           </Typography>
         )}
       </Box>
       <Box display='flex' gap={1} alignItems='center' onMouseDown={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()}>
         <ConditionalRender permission='edit-boards'>
-          <IconButton
-            size='small'
-            onClick={e => {
-              e.stopPropagation()
-              onEdit(board)
-            }}
-          >
-            <Icon icon='mdi:pencil'/>
-          </IconButton> 
+          <Tooltip title='Editar tablero'>
+            <IconButton
+              size='small'
+              onClick={e => {
+                e.stopPropagation()
+                onEdit(board)
+              }}
+              sx={{
+                bgcolor: theme => alpha(theme.palette.primary.main, 0.08),
+                color: 'primary.main',
+                '&:hover': {
+                  bgcolor: theme => alpha(theme.palette.primary.main, 0.16)
+                }
+              }}
+            >
+              <Icon icon='mdi:pencil' />
+            </IconButton>
+          </Tooltip>
         </ConditionalRender>
         <ConditionalRender permission='delete-boards'>
-          <IconButton
-            size='small'
-            color='error'
-            onClick={e => {
-              e.stopPropagation()
-              onDelete(board)
-            }}
-          >
-            <Icon icon='mdi:delete'/>
-          </IconButton>
+          <Tooltip title='Eliminar tablero'>
+            <IconButton
+              size='small'
+              color='error'
+              onClick={e => {
+                e.stopPropagation()
+                onDelete(board)
+              }}
+              sx={{
+                bgcolor: theme => alpha(theme.palette.error.main, 0.08),
+                '&:hover': {
+                  bgcolor: theme => alpha(theme.palette.error.main, 0.16)
+                }
+              }}
+            >
+              <Icon icon='mdi:delete' />
+            </IconButton>
+          </Tooltip>
         </ConditionalRender>
       </Box>
     </Paper>
@@ -251,7 +278,7 @@ const KanbanBoardsView = () => {
       toast.success('Tablero eliminado')
     } catch (error: any) {
       console.error('Error eliminando tablero:', error)
-      
+
       // Mostrar mensaje más descriptivo según el tipo de error
       if (error?.code === '23503' || error?.constraint === 'board_columns_board_id_fkey') {
         toast.error('El tablero tiene columnas o tareas. Intenta nuevamente.')
@@ -264,7 +291,7 @@ const KanbanBoardsView = () => {
   const handleAiGenerate = async () => {
     if (!aiPrompt.trim()) {
       toast.error('Por favor describe los tableros que necesitas')
-      
+
       return
     }
 
@@ -319,11 +346,11 @@ const KanbanBoardsView = () => {
           <Stack direction='row' spacing={2}>
             <ConditionalRender permission='create-boards'>
               <Tooltip title='Generar con IA'>
-                <IconButton 
-                  color='primary' 
+                <IconButton
+                  color='primary'
                   onClick={() => setAiDialogOpen(true)}
-                  sx={{ 
-                    bgcolor: 'primary.main', 
+                  sx={{
+                    bgcolor: 'primary.main',
                     color: 'white',
                     '&:hover': { bgcolor: 'primary.dark' }
                   }}
@@ -477,8 +504,8 @@ const KanbanBoardsView = () => {
           <Button onClick={() => setAiDialogOpen(false)} disabled={aiLoading}>
             Cancelar
           </Button>
-          <Button 
-            variant='contained' 
+          <Button
+            variant='contained'
             onClick={handleAiGenerate}
             disabled={aiLoading || !aiPrompt.trim()}
             startIcon={aiLoading ? <CircularProgress size={20} /> : <Icon icon='mdi:sparkles' />}

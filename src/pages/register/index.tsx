@@ -33,9 +33,8 @@ import BlankLayout from 'src/@core/layouts/BlankLayout'
 // ** Hooks
 import { useAuth } from 'src/hooks/useAuth'
 import { useSettings } from 'src/@core/hooks/useSettings'
+import FooterIllustrationsV2 from 'src/views/auth/FooterIllustrationsV2'
 
-// ** Demo Imports
-import FooterIllustrationsV2 from 'src/views/pages/auth/FooterIllustrationsV2'
 
 // ** Styled Components
 const RegisterIllustration = styled('img')(({ theme }) => ({

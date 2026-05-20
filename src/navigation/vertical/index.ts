@@ -25,32 +25,6 @@ const navigationData = (): NavItemWithPermission[] => {
       requiredPermission: 'view-boards'
     },
     {
-      title: 'AI Tools',
-      icon: 'eos-icons:ai',
-      children: [
-               
-        {
-          title: 'Post Generator',
-          icon: 'iconoir:post',
-          path: '/post-generator',
-          requiredPermission: 'view-post-generator'
-        },
-        {
-          title: 'CV Analyzer',
-          icon: 'streamline:business-user-curriculum',
-          path: '/cv-analyzer',
-          requiredPermission: 'view-cv-analyzer'
-        },
-        {
-          title: 'PDF Summarizer',
-          icon: 'mdi:file-document-edit-outline',
-          path: '/pdf-summarizer',
-          requiredPermission: 'view-pdf-summarizer'
-        }
-      ]
-    },
-    
-    {
       title: 'Configuración',
       icon: 'tabler:settings',
       requiredPermission: 'view-settings',
@@ -92,7 +66,7 @@ export const filterNavigationByPermissions = (permissions?: PermissionType[]): V
         if (item.requiredPermission && !permissionSlugs.includes(item.requiredPermission)) {
           return false
         }
-        
+
         return true
       })
       .map(item => {

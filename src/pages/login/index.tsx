@@ -35,9 +35,7 @@ import themeConfig from 'src/configs/themeConfig'
 
 // ** Layout Import
 import BlankLayout from 'src/@core/layouts/BlankLayout'
-
-// ** Demo Imports
-import FooterIllustrationsV2 from 'src/views/pages/auth/FooterIllustrationsV2'
+import FooterIllustrationsV2 from 'src/views/auth/FooterIllustrationsV2'
 
 // ** Styled Components
 const LoginIllustration = styled('img')(({ theme }) => ({
