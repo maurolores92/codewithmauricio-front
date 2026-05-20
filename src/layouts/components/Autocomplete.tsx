@@ -19,9 +19,6 @@ import { styled, useTheme } from '@mui/material/styles'
 import ListItemButton from '@mui/material/ListItemButton'
 import InputAdornment from '@mui/material/InputAdornment'
 import { AutocompleteRenderInputParams } from '@mui/material/Autocomplete'
-
-// ** Types Imports
-import { AppBarSearchType } from 'src/@fake-db/types'
 import { Settings } from 'src/@core/context/settingsContext'
 
 // ** Icon Imports
@@ -68,7 +65,7 @@ const isNavLink = (item: any): item is NavLink => {
 // Get navigation items dynamically
 const getDefaultSuggestions = (): DefaultSuggestionsType[] => {
   const navItems = navigation().filter(isNavLink)
-  
+
   return [
     {
       category: 'Herramientas Disponibles',
@@ -247,7 +244,7 @@ const AutocompleteComponent = ({ hidden, settings }: Props) => {
   const [isMounted, setIsMounted] = useState<boolean>(false)
   const [searchValue, setSearchValue] = useState<string>('')
   const [openDialog, setOpenDialog] = useState<boolean>(false)
-  const [options, setOptions] = useState<AppBarSearchType[]>([])
+  const [options, setOptions] = useState<any[]>([])
 
   // ** Hooks & Vars
   const theme = useTheme()
@@ -261,7 +258,7 @@ const AutocompleteComponent = ({ hidden, settings }: Props) => {
     if (searchValue) {
       const navItems = navigation().filter(isNavLink)
       const filteredOptions = navItems
-        .filter(item => 
+        .filter(item =>
           item.title.toLowerCase().includes(searchValue.toLowerCase()) ||
           (item.path && item.path.toLowerCase().includes(searchValue.toLowerCase()))
         )
@@ -272,7 +269,7 @@ const AutocompleteComponent = ({ hidden, settings }: Props) => {
           icon: item.icon || 'tabler:circle-dot',
           category: 'tools'
         }))
-      
+
       setOptions(filteredOptions)
     } else {
       setOptions([])
@@ -292,7 +289,7 @@ const AutocompleteComponent = ({ hidden, settings }: Props) => {
   }, [])
 
   // Handle click event on a list item in search result
-  const handleOptionClick = (obj: AppBarSearchType) => {
+  const handleOptionClick = (obj: any) => {
     setSearchValue('')
     setOpenDialog(false)
     if (obj.url) {
@@ -357,25 +354,25 @@ const AutocompleteComponent = ({ hidden, settings }: Props) => {
                 id='appBar-search'
                 isOptionEqualToValue={() => true}
                 onInputChange={(event, value: string) => setSearchValue(value)}
-                onChange={(event, obj) => handleOptionClick(obj as AppBarSearchType)}
+                onChange={(event, obj) => handleOptionClick(obj as any)}
                 noOptionsText={<NoResult value={searchValue} setOpenDialog={setOpenDialog} />}
-                getOptionLabel={(option: AppBarSearchType | unknown) => (option as AppBarSearchType).title || ''}
-                groupBy={(option: AppBarSearchType | unknown) =>
-                  searchValue.length ? categoryTitle[(option as AppBarSearchType).category] : ''
+                getOptionLabel={(option: any | unknown) => (option as any).title || ''}
+                groupBy={(option: any | unknown) =>
+                  searchValue.length ? categoryTitle[(option as any).category] : ''
                 }
                 sx={{
                   '& + .MuiAutocomplete-popper': {
                     ...(searchValue.length
                       ? {
-                          overflow: 'auto',
-                          maxHeight: 'calc(100vh - 69px)',
-                          borderTop: `1px solid ${theme.palette.divider}`,
-                          height: fullScreenDialog ? 'calc(100vh - 69px)' : 483,
-                          '& .MuiListSubheader-root': { p: theme.spacing(3.75, 6, 1.75) }
-                        }
+                        overflow: 'auto',
+                        maxHeight: 'calc(100vh - 69px)',
+                        borderTop: `1px solid ${theme.palette.divider}`,
+                        height: fullScreenDialog ? 'calc(100vh - 69px)' : 483,
+                        '& .MuiListSubheader-root': { p: theme.spacing(3.75, 6, 1.75) }
+                      }
                       : {
-                          '& .MuiAutocomplete-listbox': { pb: 0 }
-                        })
+                        '& .MuiAutocomplete-listbox': { pb: 0 }
+                      })
                   }
                 }}
                 renderInput={(params: AutocompleteRenderInputParams) => {
@@ -417,13 +414,13 @@ const AutocompleteComponent = ({ hidden, settings }: Props) => {
                     />
                   )
                 }}
-                renderOption={(props, option: AppBarSearchType | unknown) => {
+                renderOption={(props, option: any | unknown) => {
                   return searchValue.length ? (
                     <ListItem
                       {...props}
-                      key={(option as AppBarSearchType).title}
+                      key={(option as any).title}
                       className={`suggestion ${props.className}`}
-                      onClick={() => handleOptionClick(option as AppBarSearchType)}
+                      onClick={() => handleOptionClick(option as any)}
                       secondaryAction={<Icon icon='tabler:corner-down-left' fontSize='1.25rem' />}
                       sx={{
                         '& .MuiListItemSecondaryAction-root': {
@@ -441,8 +438,8 @@ const AutocompleteComponent = ({ hidden, settings }: Props) => {
                           '& svg': { mr: 2.5, color: 'text.primary' }
                         }}
                       >
-                        <Icon icon={(option as AppBarSearchType).icon || themeConfig.navSubItemIcon} />
-                        <Typography>{(option as AppBarSearchType).title}</Typography>
+                        <Icon icon={(option as any).icon || themeConfig.navSubItemIcon} />
+                        <Typography>{(option as any).title}</Typography>
                       </ListItemButton>
                     </ListItem>
                   ) : null

@@ -14,6 +14,21 @@ export type RegisterParams = {
   password: string
 }
 
+export type PermissionType = {
+  id: number
+  name: string
+  slug: string
+  description: string
+  type: 'page' | 'component' | 'action'
+  resource: string
+  createdAt: string
+  updatedAt: string
+  RolePermission?: {
+    roleId: number
+    permissionId: number
+  }
+}
+
 export type UserDataType = {
   id: number
   name: string
@@ -22,6 +37,7 @@ export type UserDataType = {
   phone?: string
   role?: string
   avatar?: string | null
+  permissions?: PermissionType[]
 }
 
 export type AuthValuesType = {

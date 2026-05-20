@@ -23,9 +23,6 @@ import 'src/configs/i18n'
 import { defaultACLObj } from 'src/configs/acl'
 import themeConfig from 'src/configs/themeConfig'
 
-// ** Fake-DB Import
-import 'src/@fake-db'
-
 // ** Third Party Import
 import { Toaster } from 'react-hot-toast'
 
@@ -45,6 +42,7 @@ import { SettingsConsumer, SettingsProvider } from 'src/@core/context/settingsCo
 
 // ** Styled Components
 import ReactHotToast from 'src/@core/styles/libs/react-hot-toast'
+import MentionsRealtimeBridge from 'src/components/realtime/MentionsRealtimeBridge'
 
 // ** Utils Imports
 import { createEmotionCache } from 'src/@core/utils/create-emotion-cache'
@@ -127,7 +125,7 @@ const App = (props: ExtendedAppProps) => {
           <meta name='keywords' content='Full Stack Developer, React, NestJS, PostgreSQL, AI Integration, Groq API, TypeScript, Next.js, REST APIs, MVP Development, Mauricio Lores' />
           <meta name='author' content='Mauricio Lores' />
           <meta name='viewport' content='initial-scale=1, width=device-width' />
-          
+
           {/* Open Graph */}
           <meta property='og:type' content='website' />
           <meta property='og:url' content='https://codewithmauricio.tech' />
@@ -136,14 +134,14 @@ const App = (props: ExtendedAppProps) => {
           <meta property='og:image' content='https://codewithmauricio.tech/images/og-image.jpg' />
           <meta property='og:site_name' content='Mauricio Lores Portfolio' />
           <meta property='og:locale' content='es_ES' />
-          
+
           {/* Twitter Card */}
           <meta name='twitter:card' content='summary_large_image' />
           <meta name='twitter:url' content='https://codewithmauricio.tech' />
           <meta name='twitter:title' content='Mauricio Lores - Full Stack Developer' />
           <meta name='twitter:description' content='Full Stack Developer especializado en React, NestJS y PostgreSQL. Construyo herramientas con IA y MVPs rápidos.' />
           <meta name='twitter:image' content='https://codewithmauricio.tech/images/og-image.jpg' />
-          
+
           {/* Canonical */}
           <link rel='canonical' href='https://codewithmauricio.tech' />
         </Head>
@@ -154,6 +152,7 @@ const App = (props: ExtendedAppProps) => {
               {({ settings }) => {
                 return (
                   <ThemeComponent settings={settings}>
+                    <MentionsRealtimeBridge />
                     <Guard authGuard={authGuard} guestGuard={guestGuard}>
                       <AclGuard aclAbilities={aclAbilities} guestGuard={guestGuard} authGuard={authGuard}>
                         {getLayout(<Component {...pageProps} />)}
